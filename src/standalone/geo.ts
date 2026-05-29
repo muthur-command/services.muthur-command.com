@@ -36,11 +36,11 @@ export function cfPropertiesFromIp(ip: string): IncomingRequestCfProperties {
   const lookup = geoip.lookup(ip);
 
   if (!lookup) {
-    return {};
+    return {} as unknown as IncomingRequestCfProperties;
   }
 
   const continent = lookup.country
-    ? (CONTINENT_BY_COUNTRY[lookup.country] as ContinentCode | undefined)
+    ? CONTINENT_BY_COUNTRY[lookup.country]
     : undefined;
 
   return {
@@ -52,5 +52,5 @@ export function cfPropertiesFromIp(ip: string): IncomingRequestCfProperties {
     timezone: lookup.timezone,
     latitude: lookup.ll?.[0]?.toString(),
     longitude: lookup.ll?.[1]?.toString(),
-  };
+  } as unknown as IncomingRequestCfProperties;
 }
