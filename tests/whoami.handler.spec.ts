@@ -16,7 +16,7 @@ describe("Handler", function () {
     const headers: Map<string, string> = new Map(
       Object.entries({ "CF-Connecting-IP": "1.2.3.4" })
     );
-    MockRequestUrl = new URL("https://services.home-assistant.io/whoami/v1");
+    MockRequestUrl = new URL("https://services.muthur-command.com/whoami/v1");
     MockRequest = {
       url: MockRequestUrl.href,
       method: "GET",
@@ -49,7 +49,7 @@ describe("Handler", function () {
   });
 
   it("Request single key", async () => {
-    MockEvent.request.url = "https://whoami.home-assistant.io/v1/ip";
+    MockEvent.request.url = "https://whoami.muthur-command.com/v1/ip";
     MockEvent.request.cf = {
       country: "XX",
       timezone: undefined,
@@ -62,7 +62,7 @@ describe("Handler", function () {
   });
 
   it("Request invalid key", async () => {
-    MockEvent.request.url = "http://whoami.home-assistant.io/v1/invalid";
+    MockEvent.request.url = "http://whoami.muthur-command.com/v1/invalid";
     MockEvent.request.cf = {
       country: "XX",
       timezone: undefined,
@@ -77,7 +77,7 @@ describe("Handler", function () {
   });
 
   it("http request", async () => {
-    MockEvent.request.url = "http://whoami.home-assistant.io/v1";
+    MockEvent.request.url = "http://whoami.muthur-command.com/v1";
     //MockEvent.request.cf = { country: "XX", timezone: undefined };
 
     const response = await routeRequest(MockSentry, MockEvent);
@@ -89,7 +89,7 @@ describe("Handler", function () {
   });
 
   it("Missing required key", async () => {
-    MockEvent.request.url = "http://whoami.home-assistant.io/v1";
+    MockEvent.request.url = "http://whoami.muthur-command.com/v1";
     MockEvent.request.cf = {
       country: "XX",
       timezone: undefined,
@@ -107,7 +107,7 @@ describe("Handler", function () {
   });
 
   it("http request to not alowed key", async () => {
-    MockEvent.request.url = "http://whoami.home-assistant.io/v1/ip";
+    MockEvent.request.url = "http://whoami.muthur-command.com/v1/ip";
     const response = await routeRequest(MockSentry, MockEvent);
 
     expect(response.status).toBe(405);
@@ -125,11 +125,11 @@ describe("Handler", function () {
       return { url, status };
     };
 
-    MockEvent.request.url = "https://whoami.home-assistant.io";
+    MockEvent.request.url = "https://whoami.muthur-command.com";
     const response = await routeRequest(MockSentry, MockEvent);
 
     expect(response.url).toBe(
-      "https://github.com/home-assistant/services.home-assistant.io"
+      "https://github.com/muthur-command/services.muthur-command.com"
     );
     expect(response.status).toBe(301);
   });
@@ -139,11 +139,11 @@ describe("Handler", function () {
       return { url, status };
     };
 
-    MockEvent.request.url = "https://services.home-assistant.io/whoami";
+    MockEvent.request.url = "https://services.muthur-command.com/whoami";
     const response = await routeRequest(MockSentry, MockEvent);
 
     expect(response.url).toBe(
-      "https://github.com/home-assistant/services.home-assistant.io"
+      "https://github.com/muthur-command/services.muthur-command.com"
     );
     expect(response.status).toBe(301);
   });

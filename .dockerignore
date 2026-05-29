@@ -1,0 +1,9 @@
+.git
+.github
+.devcontainer
+node_modules
+release
+worker
+.wrangler
+tests
+deploy

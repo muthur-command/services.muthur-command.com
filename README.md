@@ -1,54 +1,47 @@
-# services.home-assistant.io
+# services.muthur-command.com
 
-Home Assistant web services running on CloudFlare [workers](https://workers.cloudflare.com/)
+Muthur Command web services (whoami / assist). This fork builds a **Docker image**, publishes it to **GHCR**, runs it in **1Panel**, and exposes it via an **OpenResty** website.
 
-## whoami
+## Origin
 
-IP Based GEO lookup
+- **Upstream:** [home-assistant/services.home-assistant.io](https://github.com/home-assistant/services.home-assistant.io)
+- **This repo:** Endpoints for `*.muthur-command.com`, used by **Muthur Command OS** Supervisor
 
-### Adress structure
+## Image
 
-`[schema]://services.home-assistant.io/whoami/v1/[key]`
-
-| placeholder | required | description                                                 |
-| ----------- | -------- | ----------------------------------------------------------- |
-| `schema`    | True     | Use `http` or `https`                                       |
-| `key`       | False    | Return a single key from the regular JSON response as text. |
-
-### Examples
-
-```bash
-curl -sSL https://services.home-assistant.io/whoami/v1
-{
-  "ip": "1.2.3.4",
-  "city": "Gotham",
-  "continent": "Earth",
-  "country": "XX",
-  "currency": "XXX",
-  "latitude": "12.34567",
-  "longitude": "12.34567",
-  "postal_code": "12345",
-  "region_code": "00",
-  "region": "Gotham",
-  "timezone": "Earth/Gotham",
-  "iso_time": "2021-05-12T11:29:15.752Z",
-  "timestamp": 1620818956
-}
+```text
+ghcr.io/muthur-command/services.muthur-command.com:<version>
+ghcr.io/muthur-command/services.muthur-command.com:latest
 ```
 
-```bash
-curl -sSL https://services.home-assistant.io/whoami/v1/ip
-1.2.3.4
+GitHub Actions workflow **Publish** builds and pushes on `mc` pushes and GitHub Releases.
+
+## Architecture
+
+```text
+Internet → 1Panel OpenResty (HTTPS) → 127.0.0.1:3000 → Docker container
 ```
 
-## assist
+Full **1Panel + OpenResty + GHCR** deployment guide: **[README.zh-CN.md](./README.zh-CN.md)**
 
-Services used for assist.
-
-### Upload wake word training data
+## API
 
 ```bash
-curl --location --request PUT 'https://services.home-assistant.io/assist/wake_word/training_data/upload?wake_word=[name]&user_content=[user content]' \
---header 'Content-Type: audio/webm' \
---data '@/data/file.webm'
+curl -sSL https://services.muthur-command.com/whoami/v1
+curl -sSL https://services.muthur-command.com/whoami/v1/timezone
+```
+
+## Local development
+
+```bash
+yarn install
+yarn build:standalone
+yarn start
+```
+
+Or:
+
+```bash
+docker build -t services-muthur-command:local .
+docker run --rm -p 3000:3000 services-muthur-command:local
 ```

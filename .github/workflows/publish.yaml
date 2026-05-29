@@ -3,41 +3,57 @@ name: Publish
 on:
   push:
     branches:
-      - main
+      - mc
   release:
     types:
       - published
 
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: muthur-command/services.muthur-command.com
+
 jobs:
-  publish:
+  docker:
     runs-on: ubuntu-latest
-    name: Publish
+    name: Build and push Docker image
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      - name: Get version
+        id: version
+        uses: muthur-command/actions/helpers/version@mc
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@e57cd79aa6af079a7fe1c0a21347d2b4402d1e20 # v3.7.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@b5d56fd94d47b9ea5e401ecc879270c1c9a954c4 # v3.12.0
+
+      - name: Log in to GHCR
+        uses: docker/login-action@3b60b85c89666483b567368a753ccf2e1d2bb6c0 # v3.6.0
         with:
-          node-version-file: '.nvmrc'
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set wrangler version
-        id: wrangler
-        run: echo "version=$(jq -r .devDependencies.wrangler package.json | cut -c2-)" >> "$GITHUB_OUTPUT"
-
-      - name: Install packages
-        run: yarn install
-
-      - name: Set environment
-        id: environment
-        run: |
-          environment="dev"
-          if [[ "${{ github.event_name }}" == "release" ]]; then
-            environment="production"
-          fi
-          echo "environment=${environment}" >> "$GITHUB_OUTPUT"
-
-      - name: Publish ${{ steps.environment.outputs.environment }} worker
-        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@8d6e2e227b5659cbeef4e2f918088bcb5c69376a # v5.7.0
         with:
-          apiToken: ${{ secrets.CF_WORKER_API_TOKEN }}
-          wranglerVersion: ${{ steps.wrangler.outputs.version }}
-          command: deploy --env=${{ steps.environment.outputs.environment }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ steps.version.outputs.version }}
+            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+
+      - name: Build and push
+        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

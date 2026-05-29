@@ -1,5 +1,5 @@
 {
-    "name": "services.home-assistant.io",
+    "name": "services.muthur-command.com",
     "image": "mcr.microsoft.com/vscode/devcontainers/typescript-node:20",
     "context": "..",
     "remoteEnv": {

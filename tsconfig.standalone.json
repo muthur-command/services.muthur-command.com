@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "module": "CommonJS",
+    "lib": ["ES2020"],
+    "types": ["node", "@cloudflare/workers-types"]
+  },
+  "include": ["./src/**/*.ts"],
+  "exclude": ["node_modules", "tests"]
+}

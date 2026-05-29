@@ -3,17 +3,12 @@ name: Test
 on:
   pull_request:
     branches:
-      - main
+      - mc
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Build ${{ matrix.environment }} worker
-    strategy:
-      matrix:
-        environment:
-          - dev
-          - production
+    name: Build standalone server
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -21,18 +16,14 @@ jobs:
         with:
           node-version-file: ".nvmrc"
 
-      - name: Set wrangler version
-        id: wrangler
-        run: echo "version=$(jq -r .devDependencies.wrangler package.json | cut -c2-)" >> "$GITHUB_OUTPUT"
-
       - name: Install packages
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
-      - name: Build ${{ matrix.environment }} worker
-        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
-        with:
-          wranglerVersion: ${{ steps.wrangler.outputs.version }}
-          command: deploy --dry-run --env=${{ matrix.environment }}
+      - name: Build standalone server
+        run: yarn build:standalone
+
+      - name: Build Docker image
+        run: docker build -t services-muthur-command:test .
 
   test:
     runs-on: ubuntu-latest
@@ -45,7 +36,7 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Install packages
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
       - name: Test
         run: yarn test

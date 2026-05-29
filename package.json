@@ -1,6 +1,11 @@
 {
+  "name": "services.muthur-command.com",
+  "version": "0.0.0",
+  "private": true,
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build:standalone": "tsc -p tsconfig.standalone.json",
+    "start": "node dist/standalone/server.js"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260518.1",
@@ -26,6 +31,7 @@
     ]
   },
   "dependencies": {
+    "geoip-lite": "^1.4.10",
     "toucan-js": "^4.1.1"
   }
 }

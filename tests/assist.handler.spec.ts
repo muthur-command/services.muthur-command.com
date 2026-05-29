@@ -33,7 +33,7 @@ describe("Assist handler", function () {
     (global as any).console = MockedConsole();
 
     MockRequestUrl = new URL(
-      `https://services.home-assistant.io/assist/wake_word/training_data/upload?wake_word=ok_nabu&user_content=${USER_CONTENT_VALID}`
+      `https://services.muthur-command.com/assist/wake_word/training_data/upload?wake_word=ok_nabu&user_content=${USER_CONTENT_VALID}`
     );
     MockRequest = {
       url: MockRequestUrl.href,
@@ -95,7 +95,7 @@ describe("Assist handler", function () {
     ["casita", "ok_nabu", "ok_now"].forEach(async (wakeWord) => {
       it(`accepts "${wakeWord}" as wake word`, async () => {
         // @ts-expect-error overriding read-only property
-        MockEvent.request.url = `https://services.home-assistant.io/assist/wake_word/training_data/upload?wake_word=${wakeWord}&user_content=${USER_CONTENT_VALID}`;
+        MockEvent.request.url = `https://services.muthur-command.com/assist/wake_word/training_data/upload?wake_word=${wakeWord}&user_content=${USER_CONTENT_VALID}`;
         const response = await routeRequest(MockSentry, MockEvent);
         const result = await response.json();
         expect((result as any).message).toStrictEqual("success");
@@ -117,7 +117,7 @@ describe("Assist handler", function () {
     it("rejects if not the exact path", async () => {
       // @ts-expect-error overriding read-only property
       MockEvent.request.url =
-        "https://services.home-assistant.io/assist/unknown";
+        "https://services.muthur-command.com/assist/unknown";
       const response = await routeRequest(MockSentry, MockEvent);
       expect(response.status).toBe(404);
     });
@@ -157,7 +157,7 @@ describe("Assist handler", function () {
   describe("wake word parameter", () => {
     it("rejects when missing wake_word", async () => {
       // @ts-expect-error overriding read-only property
-      MockEvent.request.url = `https://services.home-assistant.io/assist/wake_word/training_data/upload?user_content=${USER_CONTENT_VALID}`;
+      MockEvent.request.url = `https://services.muthur-command.com/assist/wake_word/training_data/upload?user_content=${USER_CONTENT_VALID}`;
       const response = await routeRequest(MockSentry, MockEvent);
       const result = await response.json();
       expect((result as any).message).toStrictEqual(
@@ -170,7 +170,7 @@ describe("Assist handler", function () {
   describe("user content", () => {
     it("rejects when missing user_content", async () => {
       // @ts-expect-error overriding read-only property
-      MockEvent.request.url = `https://services.home-assistant.io/assist/wake_word/training_data/upload?wake_word=ok_nabu`;
+      MockEvent.request.url = `https://services.muthur-command.com/assist/wake_word/training_data/upload?wake_word=ok_nabu`;
       const response = await routeRequest(MockSentry, MockEvent);
       const result = await response.json();
       expect((result as any).message).toStrictEqual(
@@ -181,7 +181,7 @@ describe("Assist handler", function () {
 
     it("rejects when user_content length is above maximum", async () => {
       // @ts-expect-error overriding read-only property
-      MockEvent.request.url = `https://services.home-assistant.io/assist/wake_word/training_data/upload?wake_word=ok_nabu&user_content=${USER_CONTENT_TO_MANY_CHARACTERS}`;
+      MockEvent.request.url = `https://services.muthur-command.com/assist/wake_word/training_data/upload?wake_word=ok_nabu&user_content=${USER_CONTENT_TO_MANY_CHARACTERS}`;
       const response = await routeRequest(MockSentry, MockEvent);
       const result = await response.json();
       expect((result as any).message).toContain("Invalid user content length");
@@ -190,7 +190,7 @@ describe("Assist handler", function () {
 
     it("rejects when unkown wake_word", async () => {
       // @ts-expect-error overriding read-only property
-      MockEvent.request.url = `https://services.home-assistant.io/assist/wake_word/training_data/upload?wake_word=unknown&user_content=${USER_CONTENT_VALID}`;
+      MockEvent.request.url = `https://services.muthur-command.com/assist/wake_word/training_data/upload?wake_word=unknown&user_content=${USER_CONTENT_VALID}`;
       const response = await routeRequest(MockSentry, MockEvent);
       const result = await response.json();
       expect((result as any).message).toStrictEqual(
@@ -203,7 +203,7 @@ describe("Assist handler", function () {
   describe("negative wake_word", () => {
     it(`generates filename starting with "negative-" if the wake word is negative`, async () => {
       // @ts-expect-error overriding read-only property
-      MockEvent.request.url = `https://services.home-assistant.io/assist/wake_word/training_data/upload?wake_word=ok_now&user_content=${USER_CONTENT_VALID}`;
+      MockEvent.request.url = `https://services.muthur-command.com/assist/wake_word/training_data/upload?wake_word=ok_now&user_content=${USER_CONTENT_VALID}`;
       const response = await routeRequest(MockSentry, MockEvent);
       const result: Record<string, string> = await response.json();
 

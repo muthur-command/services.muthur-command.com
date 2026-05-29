@@ -9,7 +9,7 @@ export async function routeRequest(sentry: Toucan, event: WorkerEvent) {
   if (requestUrl.host.startsWith("whoami")) {
     // Legacy "rewrite" for old whoami address
     requestUrl = new URL(
-      `${requestUrl.protocol}//services.home-assistant.io/whoami${requestUrl.pathname}`
+      `${requestUrl.protocol}//services.muthur-command.com/whoami${requestUrl.pathname}`
     );
   }
 

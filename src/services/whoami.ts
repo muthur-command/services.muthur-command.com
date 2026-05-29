@@ -27,7 +27,7 @@ export async function whoamiHandler(
   if (!requestUrl.pathname.startsWith("/whoami/v1")) {
     // Redirect non /v1 paths to the repository
     return Response.redirect(
-      "https://github.com/home-assistant/services.home-assistant.io",
+      "https://github.com/muthur-command/services.muthur-command.com",
       301
     );
   }

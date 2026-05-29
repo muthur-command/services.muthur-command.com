@@ -14,7 +14,7 @@ describe("Handler", function () {
     const headers: Map<string, string> = new Map(
       Object.entries({ "CF-Connecting-IP": "1.2.3.4" })
     );
-    MockRequestUrl = new URL("http://services.home-assistant.io/whoami/v1/ip");
+    MockRequestUrl = new URL("http://services.muthur-command.com/whoami/v1/ip");
     MockRequest = {
       url: MockRequestUrl.href,
       method: "GET",
