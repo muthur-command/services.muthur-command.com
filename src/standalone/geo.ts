@@ -36,18 +36,17 @@ export function cfPropertiesFromIp(ip: string): IncomingRequestCfProperties {
   const lookup = geoip.lookup(ip);
 
   if (!lookup) {
-    return {
-      country: undefined,
-      timezone: undefined,
-    };
+    return {};
   }
+
+  const continent = lookup.country
+    ? (CONTINENT_BY_COUNTRY[lookup.country] as ContinentCode | undefined)
+    : undefined;
 
   return {
     city: lookup.city,
     country: lookup.country,
-    continent: lookup.country
-      ? CONTINENT_BY_COUNTRY[lookup.country]
-      : undefined,
+    continent,
     region: lookup.region,
     regionCode: lookup.region,
     timezone: lookup.timezone,

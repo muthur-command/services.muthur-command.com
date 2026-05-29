@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 
-export class FilesystemBucket implements R2Bucket {
+export class FilesystemBucket {
   constructor(private readonly rootDir: string) {}
 
   async put(

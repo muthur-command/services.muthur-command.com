@@ -96,7 +96,9 @@ export async function createStandaloneEnv(): Promise<WorkerEnv> {
     SENTRY_DSN: "",
     WORKER_ENV: process.env.WORKER_ENV || "production",
     MAILERLITE_API_KEY: "",
-    WAKEWORD_TRAINING_BUCKET: new FilesystemBucket(dataDir),
+    WAKEWORD_TRAINING_BUCKET: new FilesystemBucket(
+      dataDir
+    ) as unknown as R2Bucket,
   };
 }
 
