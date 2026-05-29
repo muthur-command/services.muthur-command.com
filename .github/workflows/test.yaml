@@ -17,10 +17,10 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Install packages
-        run: yarn install --frozen-lockfile
+        run: npm ci
 
       - name: Build standalone server
-        run: yarn build:standalone
+        run: npm run build:standalone
 
       - name: Build Docker image
         run: docker build -t services-muthur-command:test .
@@ -36,7 +36,7 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Install packages
-        run: yarn install --frozen-lockfile
+        run: npm ci
 
       - name: Test
-        run: yarn test
+        run: npm test

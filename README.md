@@ -34,9 +34,9 @@ curl -sSL https://services.muthur-command.com/whoami/v1/timezone
 ## Local development
 
 ```bash
-yarn install
-yarn build:standalone
-yarn start
+npm ci
+npm run build:standalone
+npm start
 ```
 
 Or:

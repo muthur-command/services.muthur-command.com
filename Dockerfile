@@ -2,12 +2,12 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+COPY package.json package-lock.json ./
+RUN npm ci
 
 COPY tsconfig.json tsconfig.standalone.json ./
 COPY src ./src
-RUN yarn build:standalone
+RUN npm run build:standalone
 
 FROM node:20-alpine AS runtime
 
@@ -18,8 +18,8 @@ ENV PORT=3000
 ENV WAKEWORD_DATA_DIR=/data/wakeword
 ENV WORKER_ENV=production
 
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --production && yarn cache clean
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev && npm cache clean --force
 
 COPY --from=builder /app/dist ./dist
 RUN mkdir -p /data/wakeword && chown -R node:node /app /data/wakeword

@@ -152,9 +152,9 @@ OpenResty 反代须传递 `X-Real-IP` / `X-Forwarded-For`，参见 `deploy/openr
 ## 本地开发
 
 ```bash
-yarn install
-yarn build:standalone
-yarn start
+npm ci
+npm run build:standalone
+npm start
 # 或
 docker build -t services-muthur-command:local .
 docker run --rm -p 3000:3000 services-muthur-command:local
