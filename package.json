@@ -31,7 +31,7 @@
     ]
   },
   "dependencies": {
-    "geoip-lite": "^1.4.10",
+    "geoip-lite": "^2.0.2",
     "toucan-js": "^4.1.1"
   }
 }
