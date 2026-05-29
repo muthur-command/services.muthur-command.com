@@ -28,13 +28,13 @@ jobs:
         uses: muthur-command/actions/helpers/version@mc
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@e57cd79aa6af079a7fe1c0a21347d2b4402d1e20 # v3.7.0
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@b5d56fd94d47b9ea5e401ecc879270c1c9a954c4 # v3.12.0
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
 
       - name: Log in to GHCR
-        uses: docker/login-action@3b60b85c89666483b567368a753ccf2e1d2bb6c0 # v3.6.0
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -42,7 +42,7 @@ jobs:
 
       - name: Docker metadata
         id: meta
-        uses: docker/metadata-action@8d6e2e227b5659cbeef4e2f918088bcb5c69376a # v5.7.0
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6.0.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
