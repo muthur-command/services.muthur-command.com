@@ -8,27 +8,63 @@ on:
     types:
       - published
 
-permissions:
-  contents: read
-  packages: write
+permissions: {}
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: muthur-command/services.muthur-command.com
+  ARCHITECTURES: '["amd64", "aarch64"]'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  docker:
+  init:
+    name: Initialize build
+    if: github.repository_owner == 'muthur-command'
     runs-on: ubuntu-latest
-    name: Build and push Docker image
+    permissions:
+      contents: read # To check out the repository
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      architectures: ${{ env.ARCHITECTURES }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Checkout the repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Get version
         id: version
-        uses: muthur-command/actions/helpers/version@mc
+        uses: muthur-command/actions/helpers/version@mc # zizmor: ignore[unpinned-uses]
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+  build:
+    name: Build ${{ matrix.arch }} image
+    if: github.repository_owner == 'muthur-command'
+    needs: init
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read # To check out the repository
+      packages: write # To push to GHCR
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: ${{ fromJson(needs.init.outputs.architectures) }}
+        include:
+          # Native amd64 runner
+          - arch: amd64
+            os: ubuntu-24.04
+            platform: linux/amd64
+          # Native arm64 runner (no QEMU emulation)
+          - arch: aarch64
+            os: ubuntu-24.04-arm
+            platform: linux/arm64
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
@@ -46,14 +82,76 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=${{ steps.version.outputs.version }}
-            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+            type=raw,value=${{ needs.init.outputs.version }}
 
-      - name: Build and push
+      - name: Build and push ${{ matrix.arch }} image
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ matrix.platform }}
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          # Per-arch tag; the merge job combines these into a multi-arch manifest.
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.init.outputs.version }}-${{ matrix.arch }}
           labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
+
+  merge:
+    name: Create multi-arch manifest
+    if: github.repository_owner == 'muthur-command'
+    needs: ["init", "build"]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # To check out the repository
+      packages: write # To push to GHCR
+    steps:
+      - name: Log in to GHCR
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6.0.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          sep-tags: ","
+          tags: |
+            type=raw,value=${{ needs.init.outputs.version }}
+            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+
+      - name: Create and push multi-arch manifest
+        shell: bash
+        env:
+          ARCHITECTURES: ${{ needs.init.outputs.architectures }}
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          VERSION: ${{ needs.init.outputs.version }}
+          META_TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          # Build list of per-arch source images dynamically.
+          ARCHS=$(echo "${ARCHITECTURES}" | jq -r '.[]')
+          ARCH_IMAGES=()
+          for arch in $ARCHS; do
+            ARCH_IMAGES+=("${IMAGE}:${VERSION}-${arch}")
+          done
+
+          # Build list of all final tags (sep-tags=',' in metadata-action).
+          TAG_ARGS=()
+          IFS=',' read -ra TAGS <<< "${META_TAGS}"
+          for tag in "${TAGS[@]}"; do
+            TAG_ARGS+=("--tag" "${tag}")
+          done
+
+          echo "Creating multi-arch manifest with tags: ${TAGS[*]}"
+          docker buildx imagetools create "${TAG_ARGS[@]}" "${ARCH_IMAGES[@]}"
+
+      - name: Inspect manifest
+        shell: bash
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          VERSION: ${{ needs.init.outputs.version }}
+        run: docker buildx imagetools inspect "${IMAGE}:${VERSION}"
